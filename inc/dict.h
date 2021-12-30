@@ -1,28 +1,26 @@
 #pragma once
 
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
+#include <unistd.h>
 
 typedef struct {
     char **keys;
     void **values;
     ssize_t len;
     ssize_t cap;
-} dict_t;
+} Dict;
 
 typedef void (*dictc_cleaner)(void *);
 
-typedef dict_t *dict;
+Dict *create_dict();
 
-dict create_dict();
+ssize_t dict_key_index(Dict *d, const char *key);
 
-ssize_t dict_key_index(dict d, const char *key);
+void *dict_get(Dict *, const char *key);
 
-void *dict_get(dict, const char *key);
+void dict_set(Dict *, const char *key, void *value);
 
-void dict_set(dict, const char *key, void *value);
+void dict_remove(Dict *, const char *key, dictc_cleaner cleaner);
 
-void dict_remove(dict, const char *key, dictc_cleaner cleaner);
-
-void dict_destroy(dict, dictc_cleaner cleaner);
+void dict_destroy(Dict *, dictc_cleaner cleaner);
