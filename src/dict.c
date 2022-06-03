@@ -2,16 +2,16 @@
 
 static char *clonestr(const char *src) {
     size_t len = strlen(src);
-    char *dst = (char *)malloc(sizeof(char) * (len + 1));
+    char *dst = (char *) malloc(sizeof(char) * (len + 1));
     strcpy(dst, src);
     return dst;
 }
 
 Dict *create_dict() {
-    Dict *d = (Dict *)malloc(sizeof(Dict));
+    Dict *d = (Dict *) malloc(sizeof(Dict));
     d->cap = 10;
-    d->keys = (char **)malloc(sizeof(char *) * d->cap);
-    d->values = (void **)malloc(sizeof(void *) * d->cap);
+    d->keys = (char **) malloc(sizeof(char *) * d->cap);
+    d->values = (void **) malloc(sizeof(void *) * d->cap);
     d->len = 0;
     return d;
 }
@@ -41,9 +41,9 @@ void dict_set(Dict *d, const char *key, void *value) {
     d->values[d->len] = value;
     d->len++;
     if (d->len == d->cap) {
-        d->cap = d->cap * 2;
-        void **new_values = (void **)malloc(sizeof(void *) * d->cap);
-        char **new_keys = (char **)malloc(sizeof(char *) * d->cap);
+        d->cap += 10;
+        void **new_values = (void **) malloc(sizeof(void *) * d->cap);
+        char **new_keys = (char **) malloc(sizeof(char *) * d->cap);
         for (int i = 0; i < d->len; ++i) {
             new_values[i] = d->values[i];
             new_keys[i] = d->keys[i];
