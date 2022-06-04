@@ -72,7 +72,8 @@ static dictc_size get_dict_expanded_size(DictInternals *d) {
 }
 
 static dictc_size get_dict_reduced_size(DictInternals *d) {
-    return d->cap / 4 * 3;
+    dictc_size res = d->cap / 4 * 3;
+    return res > INITIAL_CAP ? res : INITIAL_CAP;
 }
 
 static int dict_should_expand(DictInternals *d) {
@@ -80,7 +81,7 @@ static int dict_should_expand(DictInternals *d) {
 }
 
 static int dict_should_reduce(DictInternals *d) {
-    return d->len < d->cap / 2;
+    return d->cap > INITIAL_CAP && d->len < d->cap / 2;
 }
 
 static void dict_resize(DictInternals *d, dictc_size new_cap) {
