@@ -33,7 +33,8 @@ Dict dict_create(void);
 void *dict_get(Dict d, const char *key);
 
 /**
- * Set key-value pair. If key is already exist will overwrite it`s value and may cause memory leaks.
+ * Set key-value pair.
+ * If key is already exist will overwrite it`s value and may cause memory leaks.
  * @param d Dict to set value
  * @param key
  * @param value
@@ -64,7 +65,8 @@ const char *dict_set(Dict d, const char *key, void *value);
 void dict_remove(Dict d, const char *key, DictEntryCleaner cleaner);
 
 /**
- * Destroy Dict instance. If "cleaner" is not NULL will call it with all the values stored to delocate them.
+ * Destroy Dict instance.
+ * If "cleaner" is not NULL will call it with all the values stored to delocate them.
  * @param d Dict to destroy
  * @param cleaner May be NULL. Function to delocate all stored values (for example "free")
  */
@@ -116,9 +118,11 @@ void dict_iterator_destroy(DictIterator di);
  * @param di
  * @return 1 if iteration continues, 0 if iteration ended
  * @example
+ *
  * DictIterator di = dict_iterator_create(d);
-   while (dict_iterator_next(di))
-        printf("%s: %s\n", di->key, (char *) di->value);
-   dict_iterator_destroy(di);
+ * while (dict_iterator_next(di))
+ *      printf("%s: %s\n", di->key, (char *) di->value);
+ * dict_iterator_destroy(di);
+ *
  */
 int dict_iterator_next(DictIterator di);
