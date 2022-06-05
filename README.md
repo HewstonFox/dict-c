@@ -11,6 +11,100 @@ To use the library include just created `./dictc.a` while compiling your project
 
 In your code you will need to include `./inc/dict.h` header.
 
+
+Usage example
+
+```c
+#include <stdio.h>
+#include <string.h>
+#include <inc/dict.h>
+
+void keyed_free(void *value, const char *key) {
+    printf("delocating %s\n", key);
+    free(value);
+}
+
+int main() {
+    Dict d = dict_create();
+
+    // Default capacity is 16,
+    // but since there is no entries yet len is 0
+    printf("cap: %ld, len: %ld\n", dict_get_capacity(d), dict_count_entries(d));
+    // cap: 16, len: 0
+
+    // Add 200 entries.
+    for (int i = 0; i < 200; ++i) {
+        char key[11];
+        char buff[13];
+        sprintf(key, "%d", i);
+        sprintf(buff, "$%d$", i);
+
+        dict_set(d, key, strdup(buff));
+
+        printf("added %d: %s\n", i, (char *) dict_get(d, key));
+    }
+    // If there is not enough capacity to add new pair (entries count > capacity / 2)
+    // capacity expands by 16.
+    printf("cap: %ld, len: %ld\n", dict_get_capacity(d), dict_count_entries(d));
+    // cap: 400, len: 200
+
+    // Remove 150 entries
+    for (int i = 0; i < 150; ++i) {
+        char key[10];
+        sprintf(key, "%d", i);
+
+        dict_remove(d, key, (DictEntryCleaner) free);
+
+        printf("removed %d: %s\n", i, (char *) dict_get(d, key));
+    }
+    // But if "capacity / 2 > entries count",
+    // capacity decreases to "capacity / 4 * 3".
+    // Minimal capacity is 16.
+    printf("cap: %ld, len: %ld\n", dict_get_capacity(d), dict_count_entries(d));
+    // cap: 93, len: 50
+
+    // Iterate entries
+    DictIterator di = dict_iterator_create(d);
+    while (dict_iterator_next(di))
+        printf("%s: %s\n", di->key, (char *) di->value);
+    dict_iterator_destroy(di);
+
+    // Print available keys
+    const char **keys = dict_get_keys(d);
+    size_t len = dict_count_entries(d);
+    for (size_t i = 0; i < len; ++i) {
+        if (i) printf(", ");
+        printf("%s", keys[i]);
+    }
+    printf("\n");
+    // Since it's just array we can use "free" to delocate it.
+    free(keys);
+
+    // Print available values
+    // In our case we have all values "char *" type,
+    // but types can be mixed as well
+    const char **values = (const char **) dict_get_values(d);
+    for (size_t i = 0; i < len; ++i) {
+        if (i) printf(", ");
+        printf("%s", values[i]);
+    }
+    printf("\n");
+    // Since it's just array we can use "free" to delocate it.
+    free(values);
+
+    // Destroy dict with all pairs
+    // (each value will be delocated with "keyed_free" in this example).
+    // If you don`t need to delocate data,
+    // second argument can be "NULL".
+    dict_destroy(d, keyed_free);
+
+    // Destroyed dict can`t be used again,
+    // but you can do "d = dict_create();"
+
+    return 0;
+}
+```
+
 Available functions:
 
 ```c
@@ -131,97 +225,4 @@ void dict_iterator_destroy(DictIterator di);
  * 
  */
 int dict_iterator_next(DictIterator di);
-```
-
-Usage example
-
-```c
-#include <stdio.h>
-#include <string.h>
-#include <inc/dict.h>
-
-void keyed_free(void *value, const char *key) {
-    printf("delocating %s\n", key);
-    free(value);
-}
-
-int main() {
-    Dict d = dict_create();
-
-    // Default capacity is 16,
-    // but since there is no entries yet len is 0
-    printf("cap: %ld, len: %ld\n", dict_get_capacity(d), dict_count_entries(d));
-    // cap: 16, len: 0
-
-    // Add 200 entries.
-    for (int i = 0; i < 200; ++i) {
-        char key[11];
-        char buff[13];
-        sprintf(key, "%d", i);
-        sprintf(buff, "$%d$", i);
-
-        dict_set(d, key, strdup(buff));
-
-        printf("added %d: %s\n", i, (char *) dict_get(d, key));
-    }
-    // If there is not enough capacity to add new pair (entries count > capacity / 2)
-    // capacity expands by 16.
-    printf("cap: %ld, len: %ld\n", dict_get_capacity(d), dict_count_entries(d));
-    // cap: 400, len: 200
-
-    // Remove 150 entries
-    for (int i = 0; i < 150; ++i) {
-        char key[10];
-        sprintf(key, "%d", i);
-
-        dict_remove(d, key, (DictEntryCleaner) free);
-
-        printf("removed %d: %s\n", i, (char *) dict_get(d, key));
-    }
-    // But if "capacity / 2 > entries count",
-    // capacity decreases to "capacity / 4 * 3".
-    // Minimal capacity is 16.
-    printf("cap: %ld, len: %ld\n", dict_get_capacity(d), dict_count_entries(d));
-    // cap: 93, len: 50
-
-    // Iterate entries
-    DictIterator di = dict_iterator_create(d);
-    while (dict_iterator_next(di))
-        printf("%s: %s\n", di->key, (char *) di->value);
-    dict_iterator_destroy(di);
-
-    // Print available keys
-    const char **keys = dict_get_keys(d);
-    size_t len = dict_count_entries(d);
-    for (size_t i = 0; i < len; ++i) {
-        if (i) printf(", ");
-        printf("%s", keys[i]);
-    }
-    printf("\n");
-    // Since it's just array we can use "free" to delocate it.
-    free(keys);
-
-    // Print available values
-    // In our case we have all values "char *" type,
-    // but types can be mixed as well
-    const char **values = (const char **) dict_get_values(d);
-    for (size_t i = 0; i < len; ++i) {
-        if (i) printf(", ");
-        printf("%s", values[i]);
-    }
-    printf("\n");
-    // Since it's just array we can use "free" to delocate it.
-    free(values);
-
-    // Destroy dict with all pairs
-    // (each value will be delocated with "keyed_free" in this example).
-    // If you don`t need to delocate data,
-    // second argument can be "NULL".
-    dict_destroy(d, keyed_free);
-
-    // Destroyed dict can`t be used again,
-    // but you can do "d = dict_create();"
-
-    return 0;
-}
 ```
