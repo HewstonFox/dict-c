@@ -31,7 +31,7 @@ typedef struct {
 #define INITIAL_CAPACITY 16
 
 
-static char *strnew(size_t size) {
+static char *_strnew(size_t size) {
     char *str = (char *) malloc((size + 1));
     if (str == NULL)
         return NULL;
@@ -40,8 +40,8 @@ static char *strnew(size_t size) {
     return str;
 }
 
-static char *strdup(const char *s1) {
-    char *dup = strnew(strlen(s1));
+static char *_strdup(const char *s1) {
+    char *dup = _strnew(strlen(s1));
     strcpy(dup, s1);
     return dup;
 }
@@ -97,7 +97,7 @@ static const char *dict_set_entry(DictEntry *entries, size_t capacity, const cha
     }
 
     if (length != NULL) {
-        key = strdup(key);
+        key = _strdup(key);
         if (key == NULL) return NULL;
         (*length)++;
     }
