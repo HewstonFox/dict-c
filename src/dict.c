@@ -82,8 +82,8 @@ static size_t entries_find_index(DictEntry *entries, size_t capacity, const char
         }
 
         index++;
-        if (index == init_index) return 0;
         if (index >= capacity) index = 0;
+        if (index == init_index) return 0;
     }
     return index;
 }
@@ -239,6 +239,8 @@ void *dict_get(Dict d, const char *key) {
     return NULL;
 }
 
+#include <stdio.h>
+
 void dict_remove(Dict d, const char *key, DictEntryCleaner cleaner) {
     if (d == NULL) return;
 
@@ -259,16 +261,17 @@ void dict_remove(Dict d, const char *key, DictEntryCleaner cleaner) {
     index = index + 1 >= capacity ? 0 : index + 1;
 
     size_t init_index = index;
-    while (d->entries[index].key != NULL) {
-        size_t new_index = entries_find_index(d->entries, capacity, d->entries[index].key, NULL);
-        if (index != new_index && d->entries[new_index].key == NULL) {
-            d->entries[new_index] = d->entries[index];
-            d->entries[index] = (DictEntry) {NULL, NULL};
+    do {
+        if (d->entries[index].key != NULL) {
+            size_t new_index = entries_find_index(d->entries, capacity, d->entries[index].key, NULL);
+            if (index != new_index && d->entries[new_index].key == NULL) {
+                d->entries[new_index] = d->entries[index];
+                d->entries[index] = (DictEntry) {NULL, NULL};
+            }
         }
         index++;
-        if (index == init_index) break;
         if (index >= capacity) index = 0;
-    }
+    } while (index != init_index);
 
     if (dict_should_reduce(d)) dict_reduce(d);
 }
